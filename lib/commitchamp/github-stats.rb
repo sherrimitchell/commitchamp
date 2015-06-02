@@ -9,6 +9,7 @@ require 'commitchamp/version'
 
 def initialize
     github = Github.new
+    @oauth_token = ENV['OAUTH_TOKEN']
     @user = nil
     @repo = nil
     @contribution = nil
