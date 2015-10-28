@@ -5,19 +5,33 @@ module Commitchamp
     include HTTParty
     base_uri "https://api.github.com"
    
-    def initialize
-      @headers = headers(h = {"Authorization" => "Token #{@oauth_token}", "User-Agent" => "HTTParty"})
+    def initialize(access_token)
+      @headers = {
+        "Authorization" => "token #{access_token}", 
+      "User-Agent" => "HTTParty"}
     end
 
-    def get_contributions(owner_id, repo_id, page=1)
-      params = { query: { page: page } }
-      options = {
-        headers: @headers,
-        query: params
-      }
-    
-    self.class.get("/repos/#{owner}/#{repo}/stats/contributors", options)
+    def get_user_info(username)
+      self.class.get(
+        "/users/:username", headers: @headers)
     end
+
+    def get_repo_contributors(owner, repo)
+      self.class.get(
+        "/repos/:owner/:repo/contributors", headers: @headers)
+      end
+
+    def get_repo_contributions(owner_id, repo_id)
+    self.class.get(
+      "/repos/#{owner}/#{repo}/stats/contributors", headers: @headers)
+    end
+
+    def get_org_repos(org)
+      self.get(
+        "/orgs/:org/repos")
+    end
+
+
 
   end
 end

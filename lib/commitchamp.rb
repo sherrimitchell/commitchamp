@@ -10,12 +10,11 @@ module Commitchamp
   class App
     def initialize
       if ENV['OAUTH_TOKEN']
-        auth_token = ENV['OAUTH_TOKEN']
+        token = ENV['OAUTH_TOKEN']
       else
-        token = get_token
+        token = get_auth_token
       end
-      @github = Github.new 
-      @headers = headers(h = {"Authorization" => "Token #{@oauth_token}", "User-Agent" => "HTTParty"})
+      @github = Github.new(token)
     end
 
     def prompt(question, validator)
@@ -29,12 +28,7 @@ module Commitchamp
       input
     end
 
-    def confirm?(question)
-      answer = prompt(question, /^[yn]$/i)
-      answer.upcase == 'Y'
-    end
-
-    def get_token
+    def get_auth_token
       prompt("Please enter your Github personal access token: ", /^[0-9a-f]{40}$/)
     end
 
@@ -60,86 +54,27 @@ module Commitchamp
         user_adds = contributor['weeks'].map { |x| x['a'] }.sum
         user_dels = contributor['weeks'].map { |x| x['d'] }.sum
         user_coms = contributor['weeks'].map { |x| x['c'] }.sum
+      end
 
-        user.contributions.create(additions: user_adds,
-          deletions: user_dels,
+        user.contributions.create(additions: user_adds, deletions: user_dels,
           changes: user_coms,
           repo_name: repo_id)
       end
 
-    def report_header
-      puts "Additions.rjust(16)    Deletions.rjust(32)    Changes.rjust(48)"
+    def display_table_header
+      puts "Additions.rjust(26)  Deletions.rjust(40) Changes.rjust(44)"
     end
 
-    def add_contributor_data(contributors)
-    contributors = user.contributions.create(additions: user_adds,
-            deletions: user_dels,
-            changes: user_coms,
-            repo_name: repo_id)
-    end
+    def print_contributor_data
+      self.display_table_header
+      user = User.find_each(additions: user_adds, deletions: user_dels, changes: user_coms, repo_name: repo_id)
 
-    def print_report(contributors)
-      self.report_header
-      self.add_contributor.data.each do |contributor|
-      end
-        puts "#{print_report}"
+      user.each.map { |user| puts user }
     end
-  end
 
   end
 end
 
+
 app = Commitchamp::App.new
 binding.pry
-
-# def win_game?(board)
-#       WINS.any? do |a, b, c|
-#         board[a] == board[b] &&  board[b] == board[c]
-#       end
-#     end
-      
-#     def draw_game?(board)
-#       board.all? { |x| x.is_a? String }
-#     end
-
-#     def game_over?(board)
-#       win_game?(board) || draw_game?(board)
-#     end
-
-# def add_post!(post)
-#   puts "Importing post: #{post[:title]}"
-
-#   tag_models = post[:tags].map do |t|
-#     Blergers::Tag.find_or_create_by(name: t)
-#   end
-#   post[:tags] = tag_models
-
-#   post_model = Blergers::Post.create(post)
-#   puts "New post! #{post_model}"
-# end
-
-# def run!
-#   blog_path = '/Users/brit/projects/improvedmeans'
-#   toy = Blergers::Importer.new(blog_path)
-#   toy.import
-#   toy.posts.each do |post|
-#     add_post!(post)
-#   end
-# end
-
-
-# Normal Mode
-# Prompt the user for a github organization to report on
-# Produce a table of contributions
-# Get the list of all members in that organization, 
-# and then aggregate the addition, deletion and change 
-# counts (as returned from the contributors endpoint) 
-# for all public repositories for each user (note: not just contributions 
-  # to repos for the organization).
-
-# The script should produce a table something like
-
-#               Additions     Deletions     Changes
-# User 1            13534          2954        6249
-# User 2             6940           913        1603
-# ...
