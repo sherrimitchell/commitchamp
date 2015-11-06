@@ -6,7 +6,7 @@ module Commitchamp
     base_uri "https://api.github.com"
    
     def initialize(auth_token=nil)
-     token =ENV[OAUTH_TOKEN]
+     token = ENV[OAUTH_TOKEN]
      unless token
       token = prompt("Please enter your Github personal access token: ", /^[0-9a-f]{40}$/)
       end
